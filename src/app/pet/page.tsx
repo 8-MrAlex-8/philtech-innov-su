@@ -468,7 +468,7 @@ export default function GameInterface() {
           className="absolute left-4 top-0 hover:-translate-y-1 transition-transform hover:scale-110"
           title="Go to Shop"
         >
-          <ShoppingBag className="w-14 h-14 stroke-[2.5px] text-black drop-shadow-md" />
+          <ShoppingBag className="w-14 h-14 stroke-[1.5px] text-black" />
         </button>
 
         {/* Character Interaction Area */}
@@ -476,7 +476,7 @@ export default function GameInterface() {
           {/* Speech Bubble (Above Character) */}
           <div className="absolute -top-20 left-1/2 -translate-x-1/2 animate-bounce">
             <div className="relative">
-              <MessageCircle className="w-24 h-24 text-black fill-white stroke-[1.5px] rotate-[-10deg]" />
+              <MessageCircle className="w-24 h-24 text-black fill-white stroke-[1px] rotate-[-10deg]" style={{ filter: 'drop-shadow(3px 3px 0px rgba(0,0,0,1))' }} />
               <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-1">
                 <div className="w-2 h-2 bg-black rounded-full"></div>
                 <div className="w-2 h-2 bg-black rounded-full"></div>
