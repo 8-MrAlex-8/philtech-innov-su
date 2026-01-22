@@ -130,6 +130,8 @@ export default function GameInterface() {
     "animal",
   );
   const [serverQuests, setServerQuests] = useState<any[] | null>(null);
+  const [currentPetId, setCurrentPetId] = useState<number | null>(null);
+  const [showChatbot, setShowChatbot] = useState(false);
 
   // Bold the real-life action sentence in a quest description
   const renderDescriptionWithIrl = (desc: string) => {
