@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { ShoppingBag, MessageCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -95,8 +95,27 @@ const ALL_QUESTS = [
   },
 ];
 
+type Pet = {
+  id: number;
+  name: string;
+  type: string;
+  category: string;
+  image: string;
+};
+
+type Quest = {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  xp: number;
+  coins: number;
+  petType?: string;
+  bonus?: boolean;
+};
+
 // Helper function to determine pet type
-const getPetType = (pet: any): "animal" | "plant" | "dungeonMaster" => {
+const getPetType = (pet: Pet): "animal" | "plant" | "dungeonMaster" => {
   if (pet.category === "delightful-garden") {
     return "plant";
   }
@@ -106,7 +125,7 @@ const getPetType = (pet: any): "animal" | "plant" | "dungeonMaster" => {
   return "animal";
 };
 
-export default function GameInterface() {
+function GameInterface() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [imageUrl, setImageUrl] = useState("");
@@ -114,9 +133,7 @@ export default function GameInterface() {
   const [xp, setXp] = useState(0);
   const [coins, setCoins] = useState(0);
   const [completedQuests, setCompletedQuests] = useState<string[]>([]);
-  const [selectedQuest, setSelectedQuest] = useState<
-    null | (typeof ALL_QUESTS)[0]
-  >(null);
+  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [completedLoaded, setCompletedLoaded] = useState(false);
   const [petName, setPetName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
@@ -126,17 +143,18 @@ export default function GameInterface() {
     image: string;
   } | null>(null);
   const [customName, setCustomName] = useState("");
-  const [currentPetType, setCurrentPetType] = useState<"animal" | "plant" | "dungeonMaster">(
-    "animal",
-  );
-  const [serverQuests, setServerQuests] = useState<any[] | null>(null);
+  const [currentPetType, setCurrentPetType] = useState<
+    "animal" | "plant" | "dungeonMaster"
+  >("animal");
+  const [serverQuests, setServerQuests] = useState<Quest[] | null>(null);
   const [currentPetId, setCurrentPetId] = useState<number | null>(null);
   const [showChatbot, setShowChatbot] = useState(false);
 
   // Bold the real-life action sentence in a quest description
   const renderDescriptionWithIrl = (desc: string) => {
     if (!desc) return null;
-    const re = /(?:^|[.?!]\s*)(\s*(?:Take|Stand up|Stand|Do|Spend|Play|Step|Draw|Walk)[^.!?]*[.!?]?)/i;
+    const re =
+      /(?:^|[.?!]\s*)(\s*(?:Take|Stand up|Stand|Do|Spend|Play|Step|Draw|Walk)[^.!?]*[.!?]?)/i;
     const m = re.exec(desc);
     if (!m) return desc;
     const irl = m[1].trim();
@@ -267,27 +285,30 @@ export default function GameInterface() {
     }
   }, [searchParams, router]);
 
-    // When quests modal opens, try to fetch server-side quests for the current role/type
-    useEffect(() => {
-      if (!showQuests) return;
+  // When quests modal opens, try to fetch server-side quests for the current role/type
+  useEffect(() => {
+    if (!showQuests) return;
 
-      (async () => {
-        try {
-          const role = currentPetType === "dungeonMaster" ? "dungeonMaster" : "pet";
-          const res = await fetch(`/api/quests?fromPlayer=true&role=${encodeURIComponent(role)}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) setServerQuests(data);
-            else setServerQuests(null);
-          } else {
-            setServerQuests(null);
-          }
-        } catch (e) {
-          console.error("Failed to load server quests", e);
+    (async () => {
+      try {
+        const role =
+          currentPetType === "dungeonMaster" ? "dungeonMaster" : "pet";
+        const res = await fetch(
+          `/api/quests?fromPlayer=true&role=${encodeURIComponent(role)}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setServerQuests(data);
+          else setServerQuests(null);
+        } else {
           setServerQuests(null);
         }
-      })();
-    }, [showQuests, currentPetType]);
+      } catch (e) {
+        console.error("Failed to load server quests", e);
+        setServerQuests(null);
+      }
+    })();
+  }, [showQuests, currentPetType]);
 
   const addCompletedQuest = (id: string) => {
     try {
@@ -412,7 +433,7 @@ export default function GameInterface() {
   };
 
   // show the full quest view (description) before starting
-  const openQuestDetail = (quest: (typeof ALL_QUESTS)[0]) => {
+  const openQuestDetail = (quest: Quest) => {
     if (completedQuests.includes(quest.id)) return;
     setSelectedQuest(quest);
     setShowQuests(false);
@@ -420,7 +441,8 @@ export default function GameInterface() {
 
   // Get filtered quests based on current pet type. Prefer server-provided quests when available.
   const localFiltered = ALL_QUESTS.filter((q) => q.petType === currentPetType);
-  const filteredQuests = serverQuests && serverQuests.length > 0 ? serverQuests : localFiltered;
+  const filteredQuests =
+    serverQuests && serverQuests.length > 0 ? serverQuests : localFiltered;
 
   // progress percent toward next level (example: next level at 100 xp)
   const nextLevelXp = 100;
@@ -495,7 +517,10 @@ export default function GameInterface() {
             disabled={!currentPetId}
           >
             <div className="relative">
-              <MessageCircle className="w-24 h-24 text-black fill-white stroke-[1px] rotate-[-10deg]" style={{ filter: 'drop-shadow(3px 3px 0px rgba(0,0,0,1))' }} />
+              <MessageCircle
+                className="w-24 h-24 text-black fill-white stroke-[1px] rotate-[-10deg]"
+                style={{ filter: "drop-shadow(3px 3px 0px rgba(0,0,0,1))" }}
+              />
               <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-1">
                 <div className="w-2 h-2 bg-black rounded-full"></div>
                 <div className="w-2 h-2 bg-black rounded-full"></div>
@@ -734,5 +759,19 @@ export default function GameInterface() {
         />
       )}
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <GameInterface />
+    </Suspense>
   );
 }
