@@ -96,7 +96,9 @@ const ALL_QUESTS = [
 ];
 
 // Helper function to determine pet type
-const getPetType = (pet: any): "animal" | "plant" | "dungeonMaster" => {
+const getPetType = (pet: {
+  category?: string;
+}): "animal" | "plant" | "dungeonMaster" => {
   if (pet.category === "delightful-garden") {
     return "plant";
   }
@@ -126,15 +128,27 @@ export default function GameInterface() {
     image: string;
   } | null>(null);
   const [customName, setCustomName] = useState("");
-  const [currentPetType, setCurrentPetType] = useState<"animal" | "plant" | "dungeonMaster">(
-    "animal",
-  );
-  const [serverQuests, setServerQuests] = useState<any[] | null>(null);
+  const [currentPetType, setCurrentPetType] = useState<
+    "animal" | "plant" | "dungeonMaster"
+  >("animal");
+  const [serverQuests, setServerQuests] = useState<Array<{
+    id: string;
+    title: string;
+    description: string;
+    duration: number;
+    xp: number;
+    coins: number;
+    bonus?: boolean;
+    petType: string;
+  }> | null>(null);
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [currentPetId, setCurrentPetId] = useState<number | null>(null);
 
   // Bold the real-life action sentence in a quest description
   const renderDescriptionWithIrl = (desc: string) => {
     if (!desc) return null;
-    const re = /(?:^|[.?!]\s*)(\s*(?:Take|Stand up|Stand|Do|Spend|Play|Step|Draw|Walk)[^.!?]*[.!?]?)/i;
+    const re =
+      /(?:^|[.?!]\s*)(\s*(?:Take|Stand up|Stand|Do|Spend|Play|Step|Draw|Walk)[^.!?]*[.!?]?)/i;
     const m = re.exec(desc);
     if (!m) return desc;
     const irl = m[1].trim();
@@ -265,43 +279,51 @@ export default function GameInterface() {
     }
   }, [searchParams, router]);
 
-    // When quests modal opens, try to fetch server-side quests for the current role/type
-    useEffect(() => {
-      if (!showQuests) return;
+  // When quests modal opens, try to fetch server-side quests for the current role/type
+  useEffect(() => {
+    if (!showQuests) return;
 
-      (async () => {
-        try {
-          const role = currentPetType === "dungeonMaster" ? "dungeonMaster" : "pet";
-          const res = await fetch(`/api/quests?fromPlayer=true&role=${encodeURIComponent(role)}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) setServerQuests(data);
-            else setServerQuests(null);
-          } else {
-            setServerQuests(null);
-          }
-        } catch (e) {
-          console.error("Failed to load server quests", e);
+    (async () => {
+      try {
+        const role =
+          currentPetType === "dungeonMaster" ? "dungeonMaster" : "pet";
+        const res = await fetch(
+          `/api/quests?fromPlayer=true&role=${encodeURIComponent(role)}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setServerQuests(data);
+          else setServerQuests(null);
+        } else {
           setServerQuests(null);
         }
-      })();
-    }, [showQuests, currentPetType]);
+      } catch (e) {
+        console.error("Failed to load server quests", e);
+        setServerQuests(null);
+      }
+    })();
+  }, [showQuests, currentPetType]);
 
-  const addCompletedQuest = (id: string) => {
-    try {
-      const stored = JSON.parse(
-        localStorage.getItem("pet_completed_quests") || "[]",
-      );
-      const storedArr: string[] = Array.isArray(stored) ? stored : [];
-      const union = Array.from(new Set([...storedArr, ...completedQuests, id]));
-      localStorage.setItem("pet_completed_quests", JSON.stringify(union));
-      setCompletedQuests(union);
-    } catch (e) {
-      const union = Array.from(new Set([...completedQuests, id]));
-      localStorage.setItem("pet_completed_quests", JSON.stringify(union));
-      setCompletedQuests(union);
-    }
-  };
+  const addCompletedQuest = useCallback(
+    (id: string) => {
+      try {
+        const stored = JSON.parse(
+          localStorage.getItem("pet_completed_quests") || "[]",
+        );
+        const storedArr: string[] = Array.isArray(stored) ? stored : [];
+        const union = Array.from(
+          new Set([...storedArr, ...completedQuests, id]),
+        );
+        localStorage.setItem("pet_completed_quests", JSON.stringify(union));
+        setCompletedQuests(union);
+      } catch {
+        const union = Array.from(new Set([...completedQuests, id]));
+        localStorage.setItem("pet_completed_quests", JSON.stringify(union));
+        setCompletedQuests(union);
+      }
+    },
+    [completedQuests],
+  );
 
   useEffect(() => {
     // Try to load from server DB, fallback to localStorage
@@ -418,7 +440,8 @@ export default function GameInterface() {
 
   // Get filtered quests based on current pet type. Prefer server-provided quests when available.
   const localFiltered = ALL_QUESTS.filter((q) => q.petType === currentPetType);
-  const filteredQuests = serverQuests && serverQuests.length > 0 ? serverQuests : localFiltered;
+  const filteredQuests =
+    serverQuests && serverQuests.length > 0 ? serverQuests : localFiltered;
 
   // progress percent toward next level (example: next level at 100 xp)
   const nextLevelXp = 100;
@@ -454,7 +477,7 @@ export default function GameInterface() {
                   style={{ width: `${progressPct}%` }}
                 ></div>
               </div>
-              <span className="font-bold text-sm tracking-tighter">
+              <span className="ml-1.5 font-bold text-sm tracking-tighter">
                 {xp} XP
               </span>
             </div>
@@ -493,7 +516,10 @@ export default function GameInterface() {
             disabled={!currentPetId}
           >
             <div className="relative">
-              <MessageCircle className="w-24 h-24 text-black fill-white stroke-[1px] rotate-[-10deg]" style={{ filter: 'drop-shadow(3px 3px 0px rgba(0,0,0,1))' }} />
+              <MessageCircle
+                className="w-24 h-24 text-black fill-white stroke-[1px] rotate-[-10deg]"
+                style={{ filter: "drop-shadow(3px 3px 0px rgba(0,0,0,1))" }}
+              />
               <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-1">
                 <div className="w-2 h-2 bg-black rounded-full"></div>
                 <div className="w-2 h-2 bg-black rounded-full"></div>
