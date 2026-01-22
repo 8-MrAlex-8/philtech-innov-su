@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowUp, MessageCircle } from "lucide-react";
+import { ShoppingBag, MessageCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import petdata from "../../data/petdata.json";
 
 const QUESTS = [
   {
@@ -46,7 +47,8 @@ const QUESTS = [
 
 export default function GameInterface() {
   const router = useRouter();
-  const [imageUrl] = useState(
+  const searchParams = useSearchParams();
+  const [imageUrl, setImageUrl] = useState(
     "https://toppng.com/uploads/preview/cute-pusheen-cat-drawings-11549780281jhaxjprj03.png"
   );
   const [showQuests, setShowQuests] = useState(false);
@@ -54,8 +56,18 @@ export default function GameInterface() {
   const [coins, setCoins] = useState(0);
   const [completedQuests, setCompletedQuests] = useState<string[]>([]);
   const [selectedQuest, setSelectedQuest] = useState<null | (typeof QUESTS)[0]>(null);
-  const searchParams = useSearchParams();
   const [completedLoaded, setCompletedLoaded] = useState(false);
+
+  // Load pet data from JSON based on petId query parameter
+  useEffect(() => {
+    const petId = searchParams?.get("petId");
+    if (petId) {
+      const selectedPet = petdata.pets.find(p => p.id === parseInt(petId));
+      if (selectedPet) {
+        setImageUrl(selectedPet.image);
+      }
+    }
+  }, [searchParams]);
 
   const addCompletedQuest = (id: string) => {
     try {
@@ -182,9 +194,13 @@ export default function GameInterface() {
 
       {/* --- MAIN GAME AREA --- */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md mx-auto relative z-10">
-        {/* 1. Arrow Icon (Top Left floating) */}
-        <button className="absolute left-4 top-0 hover:-translate-y-1 transition-transform">
-          <ArrowUp className="w-14 h-14 stroke-[2.5px] text-black drop-shadow-md" />
+        {/* 1. Shop Icon (Top Left floating) */}
+        <button 
+          onClick={() => router.push("/shop")}
+          className="absolute left-4 top-0 hover:-translate-y-1 transition-transform hover:scale-110"
+          title="Go to Shop"
+        >
+          <ShoppingBag className="w-14 h-14 stroke-[2.5px] text-black drop-shadow-md" />
         </button>
 
         {/* Character Interaction Area */}
