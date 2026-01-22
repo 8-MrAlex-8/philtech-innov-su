@@ -7,7 +7,7 @@
   "completedQuests": [],
   "inventory": [],
   "pet": {
-    "petId": 5,
-    "petName": "Sunflower"
+    "petId": null,
+    "petName": null
   }
 }
