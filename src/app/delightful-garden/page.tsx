@@ -1,33 +1,54 @@
 import Link from "next/link";
+import { ArrowLeft, Flower2 } from "lucide-react";
 
 const DelightfulGardenPage = () => {
   return (
-    <div className="h-dvh flex items-center justify-center bg-neutral-100">
-      <div className="w-[85dvw] md:w-[30dvw] p-8 rounded-2xl bg-white shadow-lg text-center">
-        <h1 className="text-2xl font-semibold mb-6">Delightful Garden</h1>
+    <div className="h-dvh flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+      </div>
+
+      <div className="w-[90dvw] md:w-[40dvw] max-w-lg p-8 md:p-10 rounded-3xl bg-white/80 backdrop-blur-lg shadow-2xl text-center border border-white/50 animate-fade-in relative z-10">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex justify-center items-center shadow-lg">
+            <Flower2 className="h-6 w-6 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            Delightful Garden
+          </h1>
+        </div>
         
-        <p className="text-sm text-neutral-600 mb-8">Choose your plant:</p>
+        <p className="text-base text-neutral-600 mb-10 font-medium">Choose your plant:</p>
         
-        <div className="flex gap-4 mb-8 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-center">
           <Link
             href="/delightful-garden/sunflower"
-            className="px-6 py-3 rounded-lg border border-neutral-800 font-semibold hover:bg-neutral-900 hover:text-white transition"
+            className="group px-8 py-4 rounded-xl border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50 font-semibold text-yellow-700 hover:from-yellow-100 hover:to-amber-100 hover:border-yellow-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
-            🌻 Sunflower
+            <span className="text-2xl">🌻</span>
+            <span>Sunflower</span>
           </Link>
           <Link
             href="/delightful-garden/tree"
-            className="px-6 py-3 rounded-lg border border-neutral-800 font-semibold hover:bg-neutral-900 hover:text-white transition"
+            className="group px-8 py-4 rounded-xl border-2 border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 font-semibold text-green-700 hover:from-green-100 hover:to-emerald-100 hover:border-green-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
-            🌳 Tree
+            <span className="text-2xl">🌳</span>
+            <span>Tree</span>
           </Link>
         </div>
 
         <Link
           href="/"
-          className="block text-sm text-neutral-600 hover:text-neutral-900 underline"
+          className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 font-medium transition-colors group"
         >
-          ← Back to Roulette
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          Back to Roulette
         </Link>
       </div>
     </div>
+  );
+}
+
+export default DelightfulGardenPage;
