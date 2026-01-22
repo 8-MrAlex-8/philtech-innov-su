@@ -113,6 +113,7 @@ export default function GameInterface() {
     null | (typeof ALL_QUESTS)[0]
   >(null);
   const [completedLoaded, setCompletedLoaded] = useState(false);
+  const [petName, setPetName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
   const [pendingPet, setPendingPet] = useState<{
     id: number;
@@ -174,6 +175,7 @@ export default function GameInterface() {
               image: selectedPet.image,
             });
             setCustomName(selectedPet.name);
+            setPetName(selectedPet.name);
             setShowNameModal(true);
             setImageUrl(selectedPet.image);
           } catch (e) {
@@ -203,6 +205,7 @@ export default function GameInterface() {
               image: selectedPet.image,
             });
             setCustomName(selectedPet.name);
+            setPetName(selectedPet.name);
             setShowNameModal(true);
             setImageUrl(selectedPet.image);
           }
@@ -326,6 +329,7 @@ export default function GameInterface() {
       });
       setShowNameModal(false);
       setPendingPet(null);
+      setPetName(nameToUse);
       // Remove petId from URL to prevent showing modal again on refresh
       router.replace("/pet");
     } catch (e) {
@@ -436,15 +440,32 @@ export default function GameInterface() {
 
           <div className="w-64 h-48 flex items-center justify-center">
             {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt="Game Character"
-                className="w-full h-full object-contain drop-shadow-xl"
-              />
+              <div className="tilt-wobble w-full h-full flex items-center justify-center">
+                <img src={imageUrl} alt="Game Character" className="w-full h-full object-contain drop-shadow-xl" />
+              </div>
             ) : (
               <div className="w-32 h-32 bg-gray-200 rounded-full animate-pulse" />
             )}
+            <style jsx>{`
+              /* Quick wobble burst once every 5s */
+              @keyframes tiltWobble {
+                0% { transform: rotate(0deg); }
+                4% { transform: rotate(-4deg); }
+                8% { transform: rotate(4deg); }
+                12% { transform: rotate(-3deg); }
+                16% { transform: rotate(3deg); }
+                20% { transform: rotate(0deg); }
+                100% { transform: rotate(0deg); }
+              }
+              .tilt-wobble {
+                animation: tiltWobble 5s ease-in-out infinite;
+                transform-origin: 50% 80%;
+              }
+            `}</style>
           </div>
+          {petName && (
+            <div className="mt-3 text-center text-xl font-bold text-gray-800">{petName}</div>
+          )}
         </div>
 
         {/* 3. Alert Icon (Right Floating) */}
@@ -468,7 +489,7 @@ export default function GameInterface() {
 
         {/* Quest Modal */}
         {showQuests && (
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-20">
+          <div className="absolute inset-0 flex items-center justify-center z-20">
             <div className="bg-white border-2 border-black w-80 rounded-md p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold">Quests</h3>
@@ -518,7 +539,7 @@ export default function GameInterface() {
 
       {/* Quest Detail Modal */}
       {selectedQuest && (
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-30">
+        <div className="absolute inset-0 flex items-center justify-center z-30">
           <div className="bg-white border-2 border-black w-96 rounded-md p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex justify-between items-start">
               <div>
@@ -567,7 +588,7 @@ export default function GameInterface() {
 
       {/* Name Input Modal */}
       {showNameModal && pendingPet && (
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-40">
+        <div className="absolute inset-0 flex items-center justify-center z-40">
           <div className="bg-white border-2 border-black w-96 rounded-md p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex justify-between items-start mb-4">
               <h3 className="font-bold text-lg">Name Your Companion</h3>
