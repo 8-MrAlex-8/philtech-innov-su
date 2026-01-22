@@ -1,0 +1,16 @@
+{
+  "playerId": "player_001",
+  "name": "New Player",
+  "level": 1,
+  "xp": 40,
+  "coins": 20,
+  "completedQuests": [
+    "morning-glow",
+    "music-ripple"
+  ],
+  "inventory": [],
+  "pet": {
+    "petId": 2,
+    "petName": "Buddy"
+  }
+}

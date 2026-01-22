@@ -48,9 +48,7 @@ const QUESTS = [
 export default function GameInterface() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [imageUrl, setImageUrl] = useState(
-    "https://toppng.com/uploads/preview/cute-pusheen-cat-drawings-11549780281jhaxjprj03.png"
-  );
+  const [imageUrl, setImageUrl] = useState("");
   const [showQuests, setShowQuests] = useState(false);
   const [xp, setXp] = useState(0);
   const [coins, setCoins] = useState(0);
@@ -65,7 +63,41 @@ export default function GameInterface() {
       const selectedPet = petdata.pets.find(p => p.id === parseInt(petId));
       if (selectedPet) {
         setImageUrl(selectedPet.image);
+        // Save petId and petName to playerdata.json via API
+        (async () => {
+          try {
+            await fetch("/api/pet", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                petId: selectedPet.id,
+                petName: selectedPet.name,
+              }),
+            });
+          } catch (e) {
+            console.error("Failed to save pet selection", e);
+          }
+        })();
       }
+    } else {
+      // No petId in query, load from saved player profile
+      (async () => {
+        try {
+          const res = await fetch("/api/pet");
+          if (res.ok) {
+            const data = await res.json();
+            const savedPetId = data.pet?.petId;
+            if (savedPetId) {
+              const savedPet = petdata.pets.find(p => p.id === savedPetId);
+              if (savedPet) {
+                setImageUrl(savedPet.image);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load saved pet", e);
+        }
+      })();
     }
   }, [searchParams]);
 
