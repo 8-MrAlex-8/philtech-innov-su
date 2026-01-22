@@ -145,7 +145,6 @@ export default function GameInterface() {
   const progressPct = Math.min(100, Math.round(((xp % nextLevelXp) / nextLevelXp) * 100));
 
   return (
-    // Main Container - Full Screen with a subtle "paper" dot pattern
     <div className="min-h-screen bg-gray-50 flex flex-col p-6 relative overflow-hidden font-sans">
       {/* Background Dot Pattern (Optional aesthetic touch) */}
       <div
@@ -153,16 +152,14 @@ export default function GameInterface() {
         style={{ backgroundImage: "radial-gradient(#000 1px, transparent 1px)", backgroundSize: "20px 20px" }}
       ></div>
 
-      {/* --- TOP HUD (Heads Up Display) --- */}
+      {/* --- TOP HUD --- */}
       <div className="flex justify-between items-start w-full max-w-md mx-auto z-10 mb-8">
         {/* Left Widget: Level & XP */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            {/* Level Box */}
             <div className="w-10 h-10 border-2 border-black bg-white rounded-md flex items-center justify-center font-bold text-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
               {Math.floor(xp / nextLevelXp) + 1}
             </div>
-            {/* XP Bar */}
             <div className="flex items-center gap-1">
               <div className="w-24 h-6 border-2 border-black bg-white rounded-md overflow-hidden relative shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                 <div className="h-full bg-black" style={{ width: `${progressPct}%` }}></div>
@@ -172,7 +169,7 @@ export default function GameInterface() {
           </div>
         </div>
 
-        {/* Right Widget: Currency 'C' */}
+        {/* Right Widget: Currency */}
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 border-2 border-black bg-white rounded-md flex items-center justify-center font-bold text-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
             C
@@ -190,7 +187,7 @@ export default function GameInterface() {
           <ArrowUp className="w-14 h-14 stroke-[2.5px] text-black drop-shadow-md" />
         </button>
 
-        {/* 2. Character Interaction Area */}
+        {/* Character Interaction Area */}
         <div className="relative mt-10">
           {/* Speech Bubble (Above Character) */}
           <div className="absolute -top-20 left-1/2 -translate-x-1/2 animate-bounce">
@@ -204,7 +201,6 @@ export default function GameInterface() {
             </div>
           </div>
 
-          {/* Character Image */}
           <div className="w-64 h-48 flex items-center justify-center">
             {imageUrl ? (
               <img src={imageUrl} alt="Game Character" className="w-full h-full object-contain drop-shadow-xl" />
