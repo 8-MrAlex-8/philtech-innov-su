@@ -1,15 +1,17 @@
 {
   "playerId": "player_001",
-  "name": "New Player",
+  "name": "John Doe",
   "level": 1,
-  "xp": 30,
-  "coins": 15,
+  "xp": 0,
+  "coins": 0,
   "completedQuests": [
-    "music-ripple"
+    "music-ripple",
+    "morning-glow",
+    "creative-pawprints"
   ],
   "inventory": [],
   "pet": {
-    "petId": 4,
-    "petName": "Alex"
+    "petId": null,
+    "petName": null
   }
 }
