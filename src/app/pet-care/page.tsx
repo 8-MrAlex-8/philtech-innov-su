@@ -23,7 +23,9 @@ const PetCarePage = () => {
           </h1>
         </div>
 
-        <p className="text-base text-neutral-600 mb-10 font-medium">Choose your companion:</p>
+        <p className="text-base text-neutral-600 mb-10 font-medium">
+          Choose your companion:
+        </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-center flex-wrap">
           {petdata.pets
@@ -34,7 +36,11 @@ const PetCarePage = () => {
                 href={`/pet?petId=${pet.id}`}
                 className="group px-8 py-4 rounded-xl border-2 border-pink-300 bg-gradient-to-br from-pink-50 to-purple-50 font-semibold text-pink-700 hover:from-pink-100 hover:to-purple-100 hover:border-pink-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <img src={pet.image} alt={pet.name} className="w-8 h-8 rounded-full object-cover" />
+                <img
+                  src={pet.image}
+                  alt={pet.name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
                 <span>{pet.name}</span>
               </Link>
             ))}

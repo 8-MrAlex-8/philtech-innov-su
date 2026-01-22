@@ -28,7 +28,7 @@ const Shop = () => {
     setTimeout(() => {
       setProducts(MOCK_DATABASE);
       setIsLoading(false);
-    }, 1000); 
+    }, 1000);
   }, []);
 
   // 2. Fetch player coins from API
@@ -71,7 +71,11 @@ const Shop = () => {
         <div className="product-grid">
           {products.map((product) => (
             <div key={product.id} className="product-card">
-              <img src={product.image} alt={product.name} className="product-image" />
+              <img
+                src={product.image}
+                alt={product.name}
+                className="product-image"
+              />
               <div className="product-info">
                 <span className="product-type">{product.type}</span>
                 <h3>{product.name}</h3>

@@ -27,6 +27,20 @@
       "type": "cat",
       "category": "pet-care",
       "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769071063/Untitled_design_1_yd5hz0.png"
+    },
+    {
+      "id": 5,
+      "name": "Sunflower",
+      "type": "Sunflower",
+      "category": "delightful-garden",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769091120/Untitled_design_5_rv8n5v.png"
+    },
+    {
+      "id": 6,
+      "name": "Tree",
+      "type": "Tree",
+      "category": "delightful-garden",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769091116/Untitled_design_6_stqjel.png"
     }
   ]
 }

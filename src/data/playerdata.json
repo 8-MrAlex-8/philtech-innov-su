@@ -4,14 +4,10 @@
   "level": 1,
   "xp": 0,
   "coins": 0,
-  "completedQuests": [
-    "music-ripple",
-    "morning-glow",
-    "creative-pawprints"
-  ],
+  "completedQuests": [],
   "inventory": [],
   "pet": {
-    "petId": null,
-    "petName": null
+    "petId": 5,
+    "petName": "Sunflower"
   }
 }
