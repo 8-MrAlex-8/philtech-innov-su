@@ -192,7 +192,7 @@ export default function GameInterface() {
   const savePetWithName = async (useDefault: boolean = false) => {
     if (!pendingPet) return;
     const nameToUse = useDefault ? pendingPet.defaultName : (customName.trim() || pendingPet.defaultName);
-    
+
     try {
       await fetch("/api/pet", {
         method: "POST",
@@ -271,7 +271,7 @@ export default function GameInterface() {
       {/* --- MAIN GAME AREA --- */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md mx-auto relative z-10">
         {/* 1. Shop Icon (Top Left floating) */}
-        <button 
+        <button
           onClick={() => router.push("/shop")}
           className="absolute left-4 top-0 hover:-translate-y-1 transition-transform hover:scale-110"
           title="Go to Shop"
@@ -348,9 +348,9 @@ export default function GameInterface() {
                   );
                 })}
               </ul>
-                <div className="mt-3 text-xs text-gray-600">
-                  Completed: {JSON.stringify(completedQuests)}
-                </div>
+              <div className="mt-3 text-xs text-gray-600">
+                Completed: {JSON.stringify(completedQuests)}
+              </div>
             </div>
           </div>
         )}
