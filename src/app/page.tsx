@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Sparkles, Heart, Sword, Flower2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const themes = [
   {
@@ -38,8 +39,26 @@ const themes = [
 ];
 
 export default function ThemeRoulette() {
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Check if player has a pet on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/pet");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.pet?.petId) {
+            router.push("/pet");
+          }
+        }
+      } catch (e) {
+        console.error("Failed to check pet status", e);
+      }
+    })();
+  }, [router]);
 
   const prev = () => {
     setIsTransitioning(true);
