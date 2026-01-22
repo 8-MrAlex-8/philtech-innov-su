@@ -1,0 +1,13 @@
+{
+  "playerId": "01",
+  "name": "John Doe",
+  "level": 1,
+  "xp": 0,
+  "coins": 0,
+  "completedQuests": [],
+  "inventory": [],
+  "pet": {
+    "petId": null,
+    "petName": null
+  }
+}

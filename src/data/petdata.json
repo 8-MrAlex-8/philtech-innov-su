@@ -1,0 +1,46 @@
+{
+  "pets": [
+    {
+      "id": 1,
+      "name": "Jane",
+      "type": "Female_warrior",
+      "category": "dungeon-master",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769071991/Untitled_design_4_n5mnti.png"
+    },
+    {
+      "id": 2,
+      "name": "Buddy",
+      "type": "Dog",
+      "category": "pet-care",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769071571/Untitled_design_3_uxnnxp.png"
+    },
+    {
+      "id": 3,
+      "name": "John",
+      "type": "Male_Warrior",
+      "category": "dungeon-master",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769071424/Untitled_design_2_ylajdl.png"
+    },
+    {
+      "id": 4,
+      "name": "Mittens",
+      "type": "cat",
+      "category": "pet-care",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769071063/Untitled_design_1_yd5hz0.png"
+    },
+    {
+      "id": 5,
+      "name": "Sunflower",
+      "type": "Sunflower",
+      "category": "delightful-garden",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769091120/Untitled_design_5_rv8n5v.png"
+    },
+    {
+      "id": 6,
+      "name": "Tree",
+      "type": "Tree",
+      "category": "delightful-garden",
+      "image": "https://res.cloudinary.com/dvhbrcmzw/image/upload/v1769091116/Untitled_design_6_stqjel.png"
+    }
+  ]
+}

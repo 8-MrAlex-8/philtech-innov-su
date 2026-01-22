@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft, Flower2 } from "lucide-react";
+import petdata from "../../data/petdata.json";
 
 const DelightfulGardenPage = () => {
   return (
@@ -20,23 +23,27 @@ const DelightfulGardenPage = () => {
           </h1>
         </div>
 
-        <p className="text-base text-neutral-600 mb-10 font-medium">Choose your plant:</p>
+        <p className="text-base text-neutral-600 mb-10 font-medium">
+          Choose your plant:
+        </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-center">
-          <Link
-            href="/pet"
-            className="group px-8 py-4 rounded-xl border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50 font-semibold text-yellow-700 hover:from-yellow-100 hover:to-amber-100 hover:border-yellow-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
-          >
-            <span className="text-2xl">🌻</span>
-            <span>Sunflower</span>
-          </Link>
-          <Link
-            href="/pet"
-            className="group px-8 py-4 rounded-xl border-2 border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 font-semibold text-green-700 hover:from-green-100 hover:to-emerald-100 hover:border-green-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
-          >
-            <span className="text-2xl">🌳</span>
-            <span>Tree</span>
-          </Link>
+        <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-center flex-wrap">
+          {petdata.pets
+            .filter((pet) => pet.category === "delightful-garden")
+            .map((pet) => (
+              <Link
+                key={pet.id}
+                href={`/pet?petId=${pet.id}`}
+                className="group px-8 py-4 rounded-xl border-2 border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 font-semibold text-green-700 hover:from-green-100 hover:to-emerald-100 hover:border-green-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <img
+                  src={pet.image}
+                  alt={pet.name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <span>{pet.name}</span>
+              </Link>
+            ))}
         </div>
 
         <Link
@@ -49,6 +56,6 @@ const DelightfulGardenPage = () => {
       </div>
     </div>
   );
-}
+};
 
 export default DelightfulGardenPage;

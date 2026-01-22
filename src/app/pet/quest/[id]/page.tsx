@@ -15,23 +15,45 @@ export default function QuestTimerPage() {
 
   const [secondsLeft, setSecondsLeft] = useState(duration);
   const [done, setDone] = useState(false);
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
+  // Cleanup interval on unmount
   useEffect(() => {
-    if (!duration) return;
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [intervalId]);
+
+  const startTimer = () => {
+    if (timerStarted || !duration) return;
+    setTimerStarted(true);
     setSecondsLeft(duration);
     setDone(false);
+
     const iv = setInterval(() => {
       setSecondsLeft((s) => {
         if (s <= 1) {
           clearInterval(iv);
           setDone(true);
+          setIntervalId(null);
           return 0;
         }
         return s - 1;
       });
     }, 1000);
-    return () => clearInterval(iv);
-  }, [duration, id]);
+    setIntervalId(iv);
+  };
+
+  const cancelQuest = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+    router.push("/pet");
+  };
 
   const claimRewards = () => {
     // Try server-backed DB first
@@ -40,7 +62,11 @@ export default function QuestTimerPage() {
         await fetch("/api/pet", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ xp: rewardXp, coins: rewardCoins, completed: id }),
+          body: JSON.stringify({
+            xp: rewardXp,
+            coins: rewardCoins,
+            completed: id,
+          }),
         });
         router.push(`/pet?completed=${encodeURIComponent(id)}`);
         return;
@@ -51,7 +77,9 @@ export default function QuestTimerPage() {
         localStorage.setItem("pet_xp", String(curXp + rewardXp));
         localStorage.setItem("pet_coins", String(curCoins + rewardCoins));
         try {
-          const list = JSON.parse(localStorage.getItem("pet_completed_quests") || "[]");
+          const list = JSON.parse(
+            localStorage.getItem("pet_completed_quests") || "[]",
+          );
           const arr = Array.isArray(list) ? list : [];
           if (!arr.includes(id)) {
             arr.push(id);
@@ -73,18 +101,47 @@ export default function QuestTimerPage() {
         {!done ? (
           <div>
             <div className="text-6xl font-mono mb-4">{secondsLeft}s</div>
-            <div className="text-sm text-gray-600 mb-4">Task in progress...</div>
-            <button
-              onClick={() => router.push("/pet")}
-              className="px-4 py-2 border-2 border-black rounded-md bg-white hover:bg-gray-50"
-            >
-              Cancel
-            </button>
+            {!timerStarted ? (
+              <div>
+                <div className="text-sm text-gray-600 mb-4">
+                  Ready to start? Press the button when you're ready to begin.
+                </div>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={cancelQuest}
+                    className="px-4 py-2 border-2 border-black rounded-md bg-white hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={startTimer}
+                    className="px-4 py-2 border-2 border-black rounded-md bg-black text-white hover:bg-gray-800"
+                  >
+                    Start Timer
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-sm text-gray-600 mb-4">
+                  Task in progress...
+                </div>
+                <button
+                  onClick={cancelQuest}
+                  className="px-4 py-2 border-2 border-black rounded-md bg-white hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div>
             <div className="text-4xl font-bold mb-2">Done!</div>
-            <div className="mb-4">You earned <strong>{rewardXp} XP</strong> and <strong>{rewardCoins} C</strong>.</div>
+            <div className="mb-4">
+              You earned <strong>{rewardXp} XP</strong> and{" "}
+              <strong>{rewardCoins} C</strong>.
+            </div>
             <button
               onClick={claimRewards}
               className="px-4 py-2 border-2 border-black rounded-md bg-white hover:bg-gray-50"

@@ -2,36 +2,50 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const DB_PATH = path.join(process.cwd(), "src", "data", "pet-db.json");
+const PLAYER_DATA_PATH = path.join(process.cwd(), "src", "data", "playerdata.json");
+const PLAYER_ID = "player_001";
 
-async function readDb() {
+async function readPlayerData() {
   try {
-    const raw = await fs.promises.readFile(DB_PATH, "utf8");
-    return JSON.parse(raw);
+    const raw = await fs.promises.readFile(PLAYER_DATA_PATH, "utf8");
+    const data = JSON.parse(raw);
+    return data;
   } catch (e) {
-    return { xp: 0, coins: 0, completedQuests: [] };
+    return {
+      playerId: PLAYER_ID,
+      name: "New Player",
+      level: 1,
+      xp: 0,
+      coins: 0,
+      completedQuests: [],
+      inventory: [],
+      pet: {
+        petId: null,
+        petName: null
+      }
+    };
   }
 }
 
-async function writeDb(obj: any) {
-  await fs.promises.writeFile(DB_PATH, JSON.stringify(obj, null, 2), "utf8");
+async function writePlayerData(data: any) {
+  await fs.promises.writeFile(PLAYER_DATA_PATH, JSON.stringify(data, null, 2), "utf8");
 }
 
 export async function GET() {
-  const db = await readDb();
-  return NextResponse.json(db);
+  const playerData = await readPlayerData();
+  return NextResponse.json(playerData);
 }
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const db = await readDb();
+  const playerData = await readPlayerData();
 
   // Add xp/coins
-  if (typeof body.xp === "number") db.xp = (db.xp || 0) + body.xp;
-  if (typeof body.coins === "number") db.coins = (db.coins || 0) + body.coins;
+  if (typeof body.xp === "number") playerData.xp = (playerData.xp || 0) + body.xp;
+  if (typeof body.coins === "number") playerData.coins = (playerData.coins || 0) + body.coins;
 
   // Add completed quests (single string or array)
-  const existing: string[] = Array.isArray(db.completedQuests) ? db.completedQuests : [];
+  const existing: string[] = Array.isArray(playerData.completedQuests) ? playerData.completedQuests : [];
   if (body.completed) {
     if (Array.isArray(body.completed)) {
       for (const id of body.completed) if (!existing.includes(id)) existing.push(id);
@@ -39,8 +53,16 @@ export async function POST(request: Request) {
       if (!existing.includes(body.completed)) existing.push(body.completed);
     }
   }
-  db.completedQuests = existing;
+  playerData.completedQuests = existing;
 
-  await writeDb(db);
-  return NextResponse.json(db);
+  // Save pet selection
+  if (body.petId !== undefined) {
+    playerData.pet.petId = body.petId;
+  }
+  if (body.petName !== undefined) {
+    playerData.pet.petName = body.petName;
+  }
+
+  await writePlayerData(playerData);
+  return NextResponse.json(playerData);
 }
