@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles } from "lucide-react";
+
 import Link from "next/link";
 
 const themes = [
@@ -38,7 +40,9 @@ export default function ThemeRoulette() {
       <div className="w-[85dvw] md:w-[30dvw] p-8 rounded-2xl bg-white shadow-lg text-center">
         {/* Header */}
         <div className="flex items-center gap-2 text-sm text-neutral-500 mb-6">
-          <div className="h-8 w-8 rounded-full bg-neutral-300" />
+          <div className="h-8 w-8 rounded-full bg-[#84a29f] flex justify-center items-center">
+            <Sparkles className="h-4 w-4 text-white" />
+          </div>
           <span>Pick a theme</span>
         </div>
 
@@ -56,7 +60,7 @@ export default function ThemeRoulette() {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={prev}
-            className="p-2 rounded-full hover:bg-neutral-100 transition"
+            className="p-2 rounded-full hover:bg-neutral-100 transition hover:cursor-pointer"
           >
             <ChevronLeft />
           </button>
@@ -65,7 +69,7 @@ export default function ThemeRoulette() {
 
           <button
             onClick={next}
-            className="p-2 rounded-full hover:bg-neutral-100 transition"
+            className="p-2 rounded-full hover:bg-neutral-100 transition hover:cursor-pointer"
           >
             <ChevronRight />
           </button>
@@ -77,7 +81,13 @@ export default function ThemeRoulette() {
 
         {/* CTA */}
         <Link
-          href="/theme"
+          href={
+            theme.id === 0
+              ? "/pet-care"
+              : theme.id === 1
+                ? "/dungeon-master"
+                : "/delightful-garden"
+          }
           className="block w-full rounded-full border border-neutral-800 py-3 text-sm font-semibold tracking-wide hover:bg-neutral-900 hover:text-white transition"
         >
           BEGIN JOURNEY
