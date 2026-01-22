@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ShoppingBag, MessageCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import petdata from "../../data/petdata.json";
+import Chatbot from "../../components/Chatbot";
 
 // Define all available quests with pet type filtering
 const ALL_QUESTS = [
@@ -94,7 +96,7 @@ const ALL_QUESTS = [
 ];
 
 // Helper function to determine pet type
-const getPetType = (pet: any): "animal" | "plant" => {
+const getPetType = (pet: { category?: string }): "animal" | "plant" => {
   if (pet.category === "delightful-garden") {
     return "plant";
   }
@@ -124,6 +126,8 @@ export default function GameInterface() {
   const [currentPetType, setCurrentPetType] = useState<"animal" | "plant">(
     "animal",
   );
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [currentPetId, setCurrentPetId] = useState<number | null>(null);
 
   // Load pet data from JSON based on petId query parameter
   useEffect(() => {
@@ -132,7 +136,8 @@ export default function GameInterface() {
       const selectedPet = petdata.pets.find((p) => p.id === parseInt(petId));
       if (selectedPet) {
         const petType = getPetType(selectedPet);
-        setCurrentPetType(petType);
+        // Schedule state update for next render to avoid cascading renders
+        setTimeout(() => setCurrentPetType(petType), 0);
 
         // Check if pet is already saved
         (async () => {
@@ -160,11 +165,13 @@ export default function GameInterface() {
                   }),
                 });
                 setImageUrl(selectedPet.image);
+                setCurrentPetId(selectedPet.id);
+                setPetName(selectedPet.name);
                 // Remove petId from URL to prevent showing modal again on refresh
                 router.replace("/pet");
                 return;
-              } catch (e) {
-                console.error("Failed to save plant selection", e);
+              } catch {
+                console.error("Failed to save plant selection");
               }
             }
 
@@ -178,8 +185,8 @@ export default function GameInterface() {
             setPetName(selectedPet.name);
             setShowNameModal(true);
             setImageUrl(selectedPet.image);
-          } catch (e) {
-            console.error("Failed to check pet status", e);
+          } catch {
+            console.error("Failed to check pet status");
             // On error, check if it's a delightful-garden pet
             if (selectedPet.category === "delightful-garden") {
               try {
@@ -194,8 +201,8 @@ export default function GameInterface() {
                 setImageUrl(selectedPet.image);
                 router.replace("/pet");
                 return;
-              } catch (e2) {
-                console.error("Failed to save plant selection", e2);
+              } catch {
+                console.error("Failed to save plant selection");
               }
             }
             // For other pets, show modal anyway
@@ -224,31 +231,38 @@ export default function GameInterface() {
               if (savedPet) {
                 setImageUrl(savedPet.image);
                 setCurrentPetType(getPetType(savedPet));
+                setCurrentPetId(savedPet.id);
+                setPetName(data.pet?.petName || savedPet.name);
               }
             }
           }
-        } catch (e) {
-          console.error("Failed to load saved pet", e);
+        } catch {
+          console.error("Failed to load saved pet");
         }
       })();
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
-  const addCompletedQuest = (id: string) => {
-    try {
-      const stored = JSON.parse(
-        localStorage.getItem("pet_completed_quests") || "[]",
-      );
-      const storedArr: string[] = Array.isArray(stored) ? stored : [];
-      const union = Array.from(new Set([...storedArr, ...completedQuests, id]));
-      localStorage.setItem("pet_completed_quests", JSON.stringify(union));
-      setCompletedQuests(union);
-    } catch (e) {
-      const union = Array.from(new Set([...completedQuests, id]));
-      localStorage.setItem("pet_completed_quests", JSON.stringify(union));
-      setCompletedQuests(union);
-    }
-  };
+  const addCompletedQuest = useCallback(
+    (id: string) => {
+      try {
+        const stored = JSON.parse(
+          localStorage.getItem("pet_completed_quests") || "[]",
+        );
+        const storedArr: string[] = Array.isArray(stored) ? stored : [];
+        const union = Array.from(
+          new Set([...storedArr, ...completedQuests, id]),
+        );
+        localStorage.setItem("pet_completed_quests", JSON.stringify(union));
+        setCompletedQuests(union);
+      } catch {
+        const union = Array.from(new Set([...completedQuests, id]));
+        localStorage.setItem("pet_completed_quests", JSON.stringify(union));
+        setCompletedQuests(union);
+      }
+    },
+    [completedQuests],
+  );
 
   useEffect(() => {
     // Try to load from server DB, fallback to localStorage
@@ -265,8 +279,8 @@ export default function GameInterface() {
           setCompletedLoaded(true);
           return;
         }
-      } catch (e) {
-        // ignore and fallback to localStorage
+      } catch {
+        // ignore errors and fallback to localStorage
       }
 
       const storedXp = parseInt(localStorage.getItem("pet_xp") || "0", 10);
@@ -284,17 +298,21 @@ export default function GameInterface() {
     })();
   }, []);
 
-  // If navigated back with ?completed=id ensure UI updates immediately
+  // Handle completed quest from query parameter
   useEffect(() => {
     const comp = searchParams?.get?.("completed");
-    if (!comp) return;
-    addCompletedQuest(comp);
-    try {
-      router.replace("/pet");
-    } catch (e) {
-      // ignore
-    }
-  }, [searchParams]);
+    if (!comp || !completedLoaded) return;
+
+    // Schedule state update for next render to avoid cascading renders
+    setTimeout(() => {
+      addCompletedQuest(comp);
+      try {
+        router.replace("/pet");
+      } catch {
+        // ignore routing errors
+      }
+    }, 0);
+  }, [searchParams, completedLoaded, router, addCompletedQuest]);
 
   useEffect(() => {
     localStorage.setItem("pet_xp", String(xp));
@@ -330,6 +348,7 @@ export default function GameInterface() {
       setShowNameModal(false);
       setPendingPet(null);
       setPetName(nameToUse);
+      setCurrentPetId(pendingPet.id);
       // Remove petId from URL to prevent showing modal again on refresh
       router.replace("/pet");
     } catch (e) {
@@ -426,8 +445,13 @@ export default function GameInterface() {
 
         {/* Character Interaction Area */}
         <div className="relative mt-10">
-          {/* Speech Bubble (Above Character) */}
-          <div className="absolute -top-20 left-1/2 -translate-x-1/2 animate-bounce">
+          {/* Speech Bubble (Above Character) - Clickable to open chat */}
+          <button
+            onClick={() => currentPetId && setShowChatbot(true)}
+            className="absolute -top-20 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer hover:scale-110 transition-transform focus:outline-none"
+            title="Chat with your pet"
+            disabled={!currentPetId}
+          >
             <div className="relative">
               <MessageCircle className="w-24 h-24 text-black fill-white stroke-[1.5px] rotate-[-10deg]" />
               <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-1">
@@ -436,12 +460,19 @@ export default function GameInterface() {
                 <div className="w-2 h-2 bg-black rounded-full"></div>
               </div>
             </div>
-          </div>
+          </button>
 
           <div className="w-64 h-48 flex items-center justify-center">
             {imageUrl ? (
               <div className="tilt-wobble w-full h-full flex items-center justify-center">
-                <img src={imageUrl} alt="Game Character" className="w-full h-full object-contain drop-shadow-xl" />
+                <Image
+                  src={imageUrl}
+                  alt="Game Character"
+                  width={256}
+                  height={192}
+                  className="w-full h-full object-contain drop-shadow-xl"
+                  unoptimized
+                />
               </div>
             ) : (
               <div className="w-32 h-32 bg-gray-200 rounded-full animate-pulse" />
@@ -449,13 +480,27 @@ export default function GameInterface() {
             <style jsx>{`
               /* Quick wobble burst once every 5s */
               @keyframes tiltWobble {
-                0% { transform: rotate(0deg); }
-                4% { transform: rotate(-4deg); }
-                8% { transform: rotate(4deg); }
-                12% { transform: rotate(-3deg); }
-                16% { transform: rotate(3deg); }
-                20% { transform: rotate(0deg); }
-                100% { transform: rotate(0deg); }
+                0% {
+                  transform: rotate(0deg);
+                }
+                4% {
+                  transform: rotate(-4deg);
+                }
+                8% {
+                  transform: rotate(4deg);
+                }
+                12% {
+                  transform: rotate(-3deg);
+                }
+                16% {
+                  transform: rotate(3deg);
+                }
+                20% {
+                  transform: rotate(0deg);
+                }
+                100% {
+                  transform: rotate(0deg);
+                }
               }
               .tilt-wobble {
                 animation: tiltWobble 5s ease-in-out infinite;
@@ -464,7 +509,9 @@ export default function GameInterface() {
             `}</style>
           </div>
           {petName && (
-            <div className="mt-3 text-center text-xl font-bold text-gray-800">{petName}</div>
+            <div className="mt-3 text-center text-xl font-bold text-gray-800">
+              {petName}
+            </div>
           )}
         </div>
 
@@ -630,6 +677,19 @@ export default function GameInterface() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Chatbot Modal */}
+      {currentPetId && (
+        <Chatbot
+          isOpen={showChatbot}
+          onClose={() => setShowChatbot(false)}
+          petId={currentPetId}
+          petName={petName || "Pet"}
+          petType={
+            currentPetType === "plant" ? "plant companion" : "pet companion"
+          }
+        />
       )}
     </div>
   );
