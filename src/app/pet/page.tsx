@@ -55,6 +55,9 @@ export default function GameInterface() {
   const [completedQuests, setCompletedQuests] = useState<string[]>([]);
   const [selectedQuest, setSelectedQuest] = useState<null | (typeof QUESTS)[0]>(null);
   const [completedLoaded, setCompletedLoaded] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [pendingPet, setPendingPet] = useState<{ id: number; defaultName: string; image: string } | null>(null);
+  const [customName, setCustomName] = useState("");
 
   // Load pet data from JSON based on petId query parameter
   useEffect(() => {
@@ -62,20 +65,39 @@ export default function GameInterface() {
     if (petId) {
       const selectedPet = petdata.pets.find(p => p.id === parseInt(petId));
       if (selectedPet) {
-        setImageUrl(selectedPet.image);
-        // Save petId and petName to playerdata.json via API
+        // Check if pet is already saved
         (async () => {
           try {
-            await fetch("/api/pet", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                petId: selectedPet.id,
-                petName: selectedPet.name,
-              }),
+            const res = await fetch("/api/pet");
+            if (res.ok) {
+              const data = await res.json();
+              const savedPetId = data.pet?.petId;
+              // If this pet is already saved, just load it
+              if (savedPetId === selectedPet.id) {
+                setImageUrl(selectedPet.image);
+                return;
+              }
+            }
+            // Pet not saved yet, show name modal
+            setPendingPet({
+              id: selectedPet.id,
+              defaultName: selectedPet.name,
+              image: selectedPet.image,
             });
+            setCustomName(selectedPet.name);
+            setShowNameModal(true);
+            setImageUrl(selectedPet.image);
           } catch (e) {
-            console.error("Failed to save pet selection", e);
+            console.error("Failed to check pet status", e);
+            // On error, show modal anyway
+            setPendingPet({
+              id: selectedPet.id,
+              defaultName: selectedPet.name,
+              image: selectedPet.image,
+            });
+            setCustomName(selectedPet.name);
+            setShowNameModal(true);
+            setImageUrl(selectedPet.image);
           }
         })();
       }
@@ -166,6 +188,28 @@ export default function GameInterface() {
     if (!completedLoaded) return;
     localStorage.setItem("pet_completed_quests", JSON.stringify(completedQuests));
   }, [completedQuests, completedLoaded]);
+
+  const savePetWithName = async (useDefault: boolean = false) => {
+    if (!pendingPet) return;
+    const nameToUse = useDefault ? pendingPet.defaultName : (customName.trim() || pendingPet.defaultName);
+    
+    try {
+      await fetch("/api/pet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          petId: pendingPet.id,
+          petName: nameToUse,
+        }),
+      });
+      setShowNameModal(false);
+      setPendingPet(null);
+      // Remove petId from URL to prevent showing modal again on refresh
+      router.replace("/pet");
+    } catch (e) {
+      console.error("Failed to save pet selection", e);
+    }
+  };
 
   const startQuest = (quest: { id: string; duration: number; xp: number; coins: number }) => {
     // ignore clicks for completed quests (safety)
@@ -331,6 +375,48 @@ export default function GameInterface() {
             <div className="mt-4 flex gap-2 justify-end">
               <button onClick={() => setSelectedQuest(null)} className="px-3 py-1 border-2 border-black rounded-md bg-white hover:bg-gray-50">Cancel</button>
               <button onClick={() => startQuest(selectedQuest)} className="px-3 py-1 border-2 border-black rounded-md bg-black text-white">Start Quest</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Name Input Modal */}
+      {showNameModal && pendingPet && (
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-40">
+          <div className="bg-white border-2 border-black w-96 rounded-md p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="font-bold text-lg">Name Your Companion</h3>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Enter a name (or use default)</label>
+              <input
+                type="text"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder={pendingPet.defaultName}
+                className="w-full border-2 border-black rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    savePetWithName(false);
+                  }
+                }}
+              />
+              <p className="text-xs text-gray-500 mt-1">Default: {pendingPet.defaultName}</p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => savePetWithName(true)}
+                className="px-4 py-2 border-2 border-black rounded-md bg-white hover:bg-gray-50"
+              >
+                Use Default
+              </button>
+              <button
+                onClick={() => savePetWithName(false)}
+                className="px-4 py-2 border-2 border-black rounded-md bg-black text-white hover:bg-gray-800"
+              >
+                Confirm
+              </button>
             </div>
           </div>
         </div>

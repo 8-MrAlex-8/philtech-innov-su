@@ -129,6 +129,10 @@ body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
 }
 
+button:hover {
+  cursor: pointer !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -188,4 +192,3 @@ body {
 .animation-delay-4000 {
   animation-delay: 4s;
 }
-

@@ -2,15 +2,14 @@
   "playerId": "player_001",
   "name": "New Player",
   "level": 1,
-  "xp": 40,
-  "coins": 20,
+  "xp": 30,
+  "coins": 15,
   "completedQuests": [
-    "morning-glow",
     "music-ripple"
   ],
   "inventory": [],
   "pet": {
-    "petId": 2,
-    "petName": "Buddy"
+    "petId": 4,
+    "petName": "Alex"
   }
 }
