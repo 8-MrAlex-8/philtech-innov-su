@@ -96,9 +96,12 @@ const ALL_QUESTS = [
 ];
 
 // Helper function to determine pet type
-const getPetType = (pet: { category?: string }): "animal" | "plant" => {
+const getPetType = (pet: any): "animal" | "plant" | "dungeonMaster" => {
   if (pet.category === "delightful-garden") {
     return "plant";
+  }
+  if (pet.category === "dungeon-master") {
+    return "dungeonMaster";
   }
   return "animal";
 };
@@ -123,11 +126,30 @@ export default function GameInterface() {
     image: string;
   } | null>(null);
   const [customName, setCustomName] = useState("");
-  const [currentPetType, setCurrentPetType] = useState<"animal" | "plant">(
+  const [currentPetType, setCurrentPetType] = useState<"animal" | "plant" | "dungeonMaster">(
     "animal",
   );
-  const [showChatbot, setShowChatbot] = useState(false);
-  const [currentPetId, setCurrentPetId] = useState<number | null>(null);
+  const [serverQuests, setServerQuests] = useState<any[] | null>(null);
+
+  // Bold the real-life action sentence in a quest description
+  const renderDescriptionWithIrl = (desc: string) => {
+    if (!desc) return null;
+    const re = /(?:^|[.?!]\s*)(\s*(?:Take|Stand up|Stand|Do|Spend|Play|Step|Draw|Walk)[^.!?]*[.!?]?)/i;
+    const m = re.exec(desc);
+    if (!m) return desc;
+    const irl = m[1].trim();
+    const idx = desc.indexOf(irl);
+    if (idx === -1) return desc;
+    const before = desc.slice(0, idx);
+    const after = desc.slice(idx + irl.length);
+    return (
+      <>
+        {before}
+        <strong>{irl}</strong>
+        {after}
+      </>
+    );
+  };
 
   // Load pet data from JSON based on petId query parameter
   useEffect(() => {
@@ -243,26 +265,43 @@ export default function GameInterface() {
     }
   }, [searchParams, router]);
 
-  const addCompletedQuest = useCallback(
-    (id: string) => {
-      try {
-        const stored = JSON.parse(
-          localStorage.getItem("pet_completed_quests") || "[]",
-        );
-        const storedArr: string[] = Array.isArray(stored) ? stored : [];
-        const union = Array.from(
-          new Set([...storedArr, ...completedQuests, id]),
-        );
-        localStorage.setItem("pet_completed_quests", JSON.stringify(union));
-        setCompletedQuests(union);
-      } catch {
-        const union = Array.from(new Set([...completedQuests, id]));
-        localStorage.setItem("pet_completed_quests", JSON.stringify(union));
-        setCompletedQuests(union);
-      }
-    },
-    [completedQuests],
-  );
+    // When quests modal opens, try to fetch server-side quests for the current role/type
+    useEffect(() => {
+      if (!showQuests) return;
+
+      (async () => {
+        try {
+          const role = currentPetType === "dungeonMaster" ? "dungeonMaster" : "pet";
+          const res = await fetch(`/api/quests?fromPlayer=true&role=${encodeURIComponent(role)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) setServerQuests(data);
+            else setServerQuests(null);
+          } else {
+            setServerQuests(null);
+          }
+        } catch (e) {
+          console.error("Failed to load server quests", e);
+          setServerQuests(null);
+        }
+      })();
+    }, [showQuests, currentPetType]);
+
+  const addCompletedQuest = (id: string) => {
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("pet_completed_quests") || "[]",
+      );
+      const storedArr: string[] = Array.isArray(stored) ? stored : [];
+      const union = Array.from(new Set([...storedArr, ...completedQuests, id]));
+      localStorage.setItem("pet_completed_quests", JSON.stringify(union));
+      setCompletedQuests(union);
+    } catch (e) {
+      const union = Array.from(new Set([...completedQuests, id]));
+      localStorage.setItem("pet_completed_quests", JSON.stringify(union));
+      setCompletedQuests(union);
+    }
+  };
 
   useEffect(() => {
     // Try to load from server DB, fallback to localStorage
@@ -377,8 +416,9 @@ export default function GameInterface() {
     setShowQuests(false);
   };
 
-  // Get filtered quests based on current pet type
-  const filteredQuests = ALL_QUESTS.filter((q) => q.petType === currentPetType);
+  // Get filtered quests based on current pet type. Prefer server-provided quests when available.
+  const localFiltered = ALL_QUESTS.filter((q) => q.petType === currentPetType);
+  const filteredQuests = serverQuests && serverQuests.length > 0 ? serverQuests : localFiltered;
 
   // progress percent toward next level (example: next level at 100 xp)
   const nextLevelXp = 100;
@@ -440,7 +480,7 @@ export default function GameInterface() {
           className="absolute left-4 top-0 hover:-translate-y-1 transition-transform hover:scale-110"
           title="Go to Shop"
         >
-          <ShoppingBag className="w-14 h-14 stroke-[2.5px] text-black drop-shadow-md" />
+          <ShoppingBag className="w-14 h-14 stroke-[1.5px] text-black" />
         </button>
 
         {/* Character Interaction Area */}
@@ -453,7 +493,7 @@ export default function GameInterface() {
             disabled={!currentPetId}
           >
             <div className="relative">
-              <MessageCircle className="w-24 h-24 text-black fill-white stroke-[1.5px] rotate-[-10deg]" />
+              <MessageCircle className="w-24 h-24 text-black fill-white stroke-[1px] rotate-[-10deg]" style={{ filter: 'drop-shadow(3px 3px 0px rgba(0,0,0,1))' }} />
               <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-1">
                 <div className="w-2 h-2 bg-black rounded-full"></div>
                 <div className="w-2 h-2 bg-black rounded-full"></div>
@@ -605,7 +645,7 @@ export default function GameInterface() {
               </button>
             </div>
             <p className="mt-3 text-sm text-gray-700">
-              {selectedQuest.description}
+              {renderDescriptionWithIrl(selectedQuest.description)}
             </p>
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm text-gray-600">
