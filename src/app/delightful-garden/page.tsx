@@ -19,19 +19,19 @@ const DelightfulGardenPage = () => {
             Delightful Garden
           </h1>
         </div>
-        
+
         <p className="text-base text-neutral-600 mb-10 font-medium">Choose your plant:</p>
-        
+
         <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-center">
           <Link
-            href="/delightful-garden/sunflower"
+            href="/pet"
             className="group px-8 py-4 rounded-xl border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50 font-semibold text-yellow-700 hover:from-yellow-100 hover:to-amber-100 hover:border-yellow-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <span className="text-2xl">🌻</span>
             <span>Sunflower</span>
           </Link>
           <Link
-            href="/delightful-garden/tree"
+            href="/pet"
             className="group px-8 py-4 rounded-xl border-2 border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 font-semibold text-green-700 hover:from-green-100 hover:to-emerald-100 hover:border-green-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <span className="text-2xl">🌳</span>
