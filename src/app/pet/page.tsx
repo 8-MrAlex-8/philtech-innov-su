@@ -94,9 +94,12 @@ const ALL_QUESTS = [
 ];
 
 // Helper function to determine pet type
-const getPetType = (pet: any): "animal" | "plant" => {
+const getPetType = (pet: any): "animal" | "plant" | "dungeonMaster" => {
   if (pet.category === "delightful-garden") {
     return "plant";
+  }
+  if (pet.category === "dungeon-master") {
+    return "dungeonMaster";
   }
   return "animal";
 };
@@ -121,9 +124,30 @@ export default function GameInterface() {
     image: string;
   } | null>(null);
   const [customName, setCustomName] = useState("");
-  const [currentPetType, setCurrentPetType] = useState<"animal" | "plant">(
+  const [currentPetType, setCurrentPetType] = useState<"animal" | "plant" | "dungeonMaster">(
     "animal",
   );
+  const [serverQuests, setServerQuests] = useState<any[] | null>(null);
+
+  // Bold the real-life action sentence in a quest description
+  const renderDescriptionWithIrl = (desc: string) => {
+    if (!desc) return null;
+    const re = /(?:^|[.?!]\s*)(\s*(?:Take|Stand up|Stand|Do|Spend|Play|Step|Draw|Walk)[^.!?]*[.!?]?)/i;
+    const m = re.exec(desc);
+    if (!m) return desc;
+    const irl = m[1].trim();
+    const idx = desc.indexOf(irl);
+    if (idx === -1) return desc;
+    const before = desc.slice(0, idx);
+    const after = desc.slice(idx + irl.length);
+    return (
+      <>
+        {before}
+        <strong>{irl}</strong>
+        {after}
+      </>
+    );
+  };
 
   // Load pet data from JSON based on petId query parameter
   useEffect(() => {
@@ -233,6 +257,28 @@ export default function GameInterface() {
       })();
     }
   }, [searchParams]);
+
+    // When quests modal opens, try to fetch server-side quests for the current role/type
+    useEffect(() => {
+      if (!showQuests) return;
+
+      (async () => {
+        try {
+          const role = currentPetType === "dungeonMaster" ? "dungeonMaster" : "pet";
+          const res = await fetch(`/api/quests?fromPlayer=true&role=${encodeURIComponent(role)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) setServerQuests(data);
+            else setServerQuests(null);
+          } else {
+            setServerQuests(null);
+          }
+        } catch (e) {
+          console.error("Failed to load server quests", e);
+          setServerQuests(null);
+        }
+      })();
+    }, [showQuests, currentPetType]);
 
   const addCompletedQuest = (id: string) => {
     try {
@@ -358,8 +404,9 @@ export default function GameInterface() {
     setShowQuests(false);
   };
 
-  // Get filtered quests based on current pet type
-  const filteredQuests = ALL_QUESTS.filter((q) => q.petType === currentPetType);
+  // Get filtered quests based on current pet type. Prefer server-provided quests when available.
+  const localFiltered = ALL_QUESTS.filter((q) => q.petType === currentPetType);
+  const filteredQuests = serverQuests && serverQuests.length > 0 ? serverQuests : localFiltered;
 
   // progress percent toward next level (example: next level at 100 xp)
   const nextLevelXp = 100;
@@ -558,7 +605,7 @@ export default function GameInterface() {
               </button>
             </div>
             <p className="mt-3 text-sm text-gray-700">
-              {selectedQuest.description}
+              {renderDescriptionWithIrl(selectedQuest.description)}
             </p>
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm text-gray-600">
