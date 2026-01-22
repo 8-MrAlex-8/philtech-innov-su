@@ -19,19 +19,19 @@ const DungeonMasterPage = () => {
             Dungeon Master
           </h1>
         </div>
-        
+
         <p className="text-base text-neutral-600 mb-10 font-medium">Choose your warrior class:</p>
-        
+
         <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-center">
           <Link
-            href="/dungeon-master/male-warrior"
+            href="/pet"
             className="group px-8 py-4 rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 font-semibold text-amber-700 hover:from-amber-100 hover:to-orange-100 hover:border-amber-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <span className="text-2xl">⚔️</span>
             <span>Male Warrior</span>
           </Link>
           <Link
-            href="/dungeon-master/female-warrior"
+            href="/pet"
             className="group px-8 py-4 rounded-xl border-2 border-red-300 bg-gradient-to-br from-red-50 to-pink-50 font-semibold text-red-700 hover:from-red-100 hover:to-pink-100 hover:border-red-400 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <span className="text-2xl">⚔️</span>
