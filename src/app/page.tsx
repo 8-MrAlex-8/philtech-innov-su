@@ -1,67 +1,146 @@
-import Image from "next/image";
-import { BoxComponent } from "../components/BoxComponent";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Sparkles, Heart, Sword, Flower2 } from "lucide-react";
+import Link from "next/link";
+
+const themes = [
+  {
+    id: 0,
+    title: "Pet Care",
+    description:
+      "Nurture a loyal, trustworthy companion at the same time you nurture yourself.",
+    icon: Heart,
+    gradient: "from-pink-100 via-purple-100 to-blue-100",
+    color: "text-pink-600",
+    bgColor: "bg-pink-50",
+  },
+  {
+    id: 1,
+    title: "Dungeon Master",
+    description:
+      "Complete quests, level up skills, and master your day like a true adventurer.",
+    icon: Sword,
+    gradient: "from-amber-100 via-orange-100 to-red-100",
+    color: "text-amber-600",
+    bgColor: "bg-amber-50",
+  },
+  {
+    id: 2,
+    title: "Delightful Garden",
+    description:
+      "Tend tasks, grow habits, and watch your life bloom beautifully.",
+    icon: Flower2,
+    gradient: "from-green-100 via-emerald-100 to-teal-100",
+    color: "text-green-600",
+    bgColor: "bg-green-50",
+  },
+];
+
+export default function ThemeRoulette() {
+  const [index, setIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const prev = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIndex((i) => (i - 1 + themes.length) % themes.length);
+      setIsTransitioning(false);
+    }, 150);
+  };
+
+  const next = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIndex((i) => (i + 1) % themes.length);
+      setIsTransitioning(false);
+    }, 150);
+  };
+
+  const theme = themes[index];
+  const Icon = theme.icon;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        {/* <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        /> */}
-        <BoxComponent />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="h-dvh flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="w-[90dvw] md:w-[35dvw] max-w-md p-8 md:p-10 rounded-3xl bg-white/80 backdrop-blur-lg shadow-2xl text-center border border-white/50 animate-fade-in relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-center gap-2 text-sm text-neutral-600 mb-8">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#84a29f] to-[#6b8a87] flex justify-center items-center shadow-lg">
+            <Sparkles className="h-5 w-5 text-white" />
+          </div>
+          <span className="font-medium">Pick a theme</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* Icon Display */}
+        <div className={`mx-auto mb-8 h-32 w-32 rounded-2xl bg-gradient-to-br ${theme.gradient} flex items-center justify-center shadow-lg transition-all duration-300 ${isTransitioning ? 'scale-95 opacity-50' : 'scale-100 opacity-100'}`}>
+          <Icon className={`h-16 w-16 ${theme.color} transition-all duration-300`} />
+        </div>
+
+        {/* Tagline */}
+        <p className="text-sm italic text-neutral-500 mb-8 font-medium">
+          Embark on a path to a better you.
+        </p>
+
+        {/* Roulette */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={prev}
+            className="p-3 rounded-full hover:bg-neutral-100 transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-md group"
+            aria-label="Previous theme"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            <ChevronLeft className="h-5 w-5 text-neutral-600 group-hover:text-neutral-900" />
+          </button>
+
+          <h2 className={`text-2xl font-bold ${theme.color} transition-all duration-300 ${isTransitioning ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}`}>
+            {theme.title}
+          </h2>
+
+          <button
+            onClick={next}
+            className="p-3 rounded-full hover:bg-neutral-100 transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-md group"
+            aria-label="Next theme"
+          >
+            <ChevronRight className="h-5 w-5 text-neutral-600 group-hover:text-neutral-900" />
+          </button>
+        </div>
+
+        <p className={`text-sm text-neutral-600 mb-10 px-4 leading-relaxed transition-all duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+          {theme.description}
+        </p>
+
+        {/* Theme indicators */}
+        <div className="flex gap-2 justify-center mb-8">
+          {themes.map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                i === index ? 'w-8 bg-[#84a29f]' : 'w-2 bg-neutral-300'
+              }`}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
-      </main>
+
+        {/* CTA */}
+        <Link
+          href={
+            theme.id === 0
+              ? "/pet-care"
+              : theme.id === 1
+                ? "/dungeon-master"
+                : "/delightful-garden"
+          }
+          className={`block w-full rounded-full bg-gradient-to-r from-[#84a29f] to-[#6b8a87] py-4 text-sm font-semibold tracking-wide text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 ${theme.bgColor}`}
+        >
+          BEGIN JOURNEY
+        </Link>
+      </div>
     </div>
   );
 }
